@@ -1,0 +1,3 @@
+# Change value to `false` to reject incomming requests
+# to update the database and then restart the server:
+accept=true
