@@ -1,0 +1,10 @@
+# Binaries:
+*
+!*/
+!*.*
+*.exe
+*.out
+!LICENSE
+
+# Databases:
+*.db

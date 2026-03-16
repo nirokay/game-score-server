@@ -11,3 +11,4 @@ bin           = @["server"]
 # Dependencies
 
 requires "nim >= 2.2.8"
+requires "db_connector"
