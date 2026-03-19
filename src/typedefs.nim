@@ -1,4 +1,4 @@
-import std/[asyncdispatch, json, options]
+import std/[strutils, httpcore, json, options]
 
 type
     ResponseScoreEntry* = object
@@ -13,22 +13,22 @@ type
     ServerResponse* = object
         code*: HttpCode = Http200
         message*: string = "Message not provided."
-        json*: JsonNode = %* {}
+        data*: JsonNode = %* {}
 
 
+proc getJsonData*(response: ServerResponse): JsonNode =
+    result = %* {"code": 200, "message": "", "data": {}}
+    result["code"].num = parseInt(split($response.code, " ")[0]) # yeah sure, this is smart
+    result["message"].str = response.message
+    result["data"] = response.data
+proc getJsonDataString*(response: ServerResponse): string =
+    result = $response.getJsonData()
 
-proc toJson*(response: ServerResponse): JsonNode =
-    result = %* {
-        code: response.code,
-        message: response.message
-        data: response.json
-    }
-
-proc newResponse*(code: HttpCode, message: string, json: JsonNode = parseJson("{}")): ServerResponse =
+proc newResponse*(code: HttpCode, message: string, data: JsonNode = parseJson("{}")): ServerResponse =
     result = ServerResponse(
         code: code,
         message: message,
-        json: json
+        data: data
     )
 
 # Http 5xx:

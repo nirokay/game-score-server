@@ -3,6 +3,10 @@
     "strdefine",
     "intdefine",
     "notin",
-    "apos"
+    "apos",
+    "noconv",
+    "Catchable",
+    "elems",
+    "strutils"
   ]
 }

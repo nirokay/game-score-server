@@ -1,15 +1,11 @@
 import std/[asynchttpserver, asyncdispatch, strutils]
-import typedefs, globals
-
-
+import typedefs, globals, httpHeaders, database
 
 proc handleRequest(request: Request) {.async, gcsafe.} =
-    let
-        headers = {"Content-type": "text/json; charset=utf-8"}
+    let headers: HttpHeaders = getHttpHeaders()
 
-
-
-    await request.respond(code)
+    let test = responsePostRequestAccepted()
+    await request.respond(test.code, test.getJsonDataString(), headers)
 
 var serverShouldClose: bool = false
 proc runServer() {.async.} =
@@ -20,3 +16,7 @@ proc runServer() {.async.} =
     while not serverShouldClose:
         if server.shouldAcceptRequest(): await server.acceptRequest(handleRequest)
         else: await sleepAsync(500)
+
+
+initDatabase()
+waitFor runServer()
