@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS REPLACE_ME (
     timestamp INTEGER PRIMARY KEY UNIQUE NOT NULL,
     username WORD DEFAULT "",
-    score INTEGER
+    score INTEGER,
+    agent WORD DEFAULT ""
 );

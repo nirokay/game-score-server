@@ -32,12 +32,13 @@ proc newResponse*(code: HttpCode, message: string, data: JsonNode = parseJson("{
     )
 
 # Http 5xx:
-proc responseServerError*(): ServerResponse = newResponse(Http500, "Server encountered an error.")
+proc responseServerError*(msg: string = "Server encountered an error."): ServerResponse = newResponse(Http500, msg)
 
 # Http 4xx:
-proc responseInvalidData*(): ServerResponse = newResponse(Http400, "Invalid data.")
-proc responseRejected*(): ServerResponse = newResponse(Http403, "Request rejected.")
+proc responseInvalidData*(msg: string = "Invalid data."): ServerResponse = newResponse(Http400, msg)
+proc responseRejected*(msg: string = "Request rejected."): ServerResponse = newResponse(Http403, msg)
 
 # Http 2xx:
 proc responsePostRequestAccepted*(): ServerResponse = newResponse(Http201, "Post/Put request accepted.")
 proc responseGetRequestAccepted*(data: JsonNode): ServerResponse = newResponse(Http200, "Get request accepted.", data)
+proc responsePing*(): ServerResponse = newResponse(Http200, "Hello!")

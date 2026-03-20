@@ -53,4 +53,4 @@ proc parseGamesJson(): seq[tuple[gameName, tableName: string]] =
         r.gameName = obj["name"].str
         r.tableName = obj["table"].str
         result.add r
-let gamesTable*: seq[tuple[gameName, tableName: string]] = parseGamesJson()
+const gamesTable*: seq[tuple[gameName, tableName: string]] = parseGamesJson()

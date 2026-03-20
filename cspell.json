@@ -7,6 +7,10 @@
     "noconv",
     "Catchable",
     "elems",
-    "strutils"
+    "strutils",
+    "fnum",
+    "gcsafe",
+    "asynchttpserver",
+    "asyncdispatch"
   ]
 }

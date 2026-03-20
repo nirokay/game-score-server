@@ -1,11 +1,23 @@
-import std/[asynchttpserver, asyncdispatch, strutils]
+import std/[asynchttpserver, asyncdispatch, strutils, json]
 import typedefs, globals, httpHeaders, database
+
+
+proc handleGet(request: Request): ServerResponse = responseGetRequestAccepted(%* {})
+proc handlePut(request: Request): ServerResponse =
+    let status = request.body.newDatabaseEntryFromJsonString()
+    result = block:
+        if status.ok: responsePostRequestAccepted()
+        else: responseInvalidData(status.message)
 
 proc handleRequest(request: Request) {.async, gcsafe.} =
     let headers: HttpHeaders = getHttpHeaders()
+    let response: ServerResponse = case request.reqMethod:
+        of HttpHead: responsePing()
+        of HttpGet: request.handleGet()
+        of HttpPost: request.handlePut()
+        else: responseInvalidData("Invalid HTTP request method.")
 
-    let test = responsePostRequestAccepted()
-    await request.respond(test.code, test.getJsonDataString(), headers)
+    await request.respond(response.code, response.getJsonDataString(), headers)
 
 var serverShouldClose: bool = false
 proc runServer() {.async.} =
