@@ -68,15 +68,15 @@ proc isValidTableName(name: string): bool =
 proc getTimeStamp(): int =
     result = toInt floor(epochTime() * 1000)
 
-proc newDatabaseEntry*(tableName: string, name: string, score: int): tuple[ok: bool, message: string] =
+proc newDatabaseEntry*(tableName: string, name: string, score: int, agent: string): tuple[ok: bool, message: string] =
     let
         statement: string = sqlNewEntry.replace("REPLACE_ME", tableName)
         timestamp: int = getTimeStamp()
     withDatabase db:
-        db.exec(sql statement, timestamp, name, score)
+        db.exec(sql statement, timestamp, name, score, agent)
     result = (ok: true, message: "Data written!")
 
-proc newDatabaseEntryFromJson*(json: JsonNode): tuple[ok: bool, message: string] =
+proc newDatabaseEntryFromJson*(json: JsonNode, agent: string): tuple[ok: bool, message: string] =
     if json.kind != JObject: return reject("JSON is not an object, malformed payload.")
 
     # PARSING:
@@ -117,12 +117,12 @@ proc newDatabaseEntryFromJson*(json: JsonNode): tuple[ok: bool, message: string]
     if not isValidTableName(tableName): return reject("Validation: Rejected due to invalid table name (THIS IS A SERVER ISSUE).")
 
     # Fucking finally:
-    result = newDatabaseEntry(tableName, username, score)
+    result = newDatabaseEntry(tableName, username, score, agent)
 
-proc newDatabaseEntryFromJsonString*(data: string): tuple[ok: bool, message: string] =
+proc newDatabaseEntryFromJsonString*(data, agent: string): tuple[ok: bool, message: string] =
     var json: JsonNode
     try:
         json = data.parseJson()
     except CatchableError as e:
         return reject("JSON failed to parse, malformed payload.")
-    result = json.newDatabaseEntryFromJson()
+    result = json.newDatabaseEntryFromJson(agent)

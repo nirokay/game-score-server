@@ -37,9 +37,9 @@ proc sanitizeIncomingDecodeEncode*(encoded: string): string =
     ## Sanitizes text by removing any character except the ones defined in `const replaceCharacters`.
     ## Ready to be put into database.
     ## Only when receiving data.
-    result = encoded.decodeUrl()
+    result = encoded.decodeUrl(false)
     result = result.replaceSusCharacters()
-    result = result.encodeUrl()
+    result = result.encodeUrl(false)
 
 
 # Games:

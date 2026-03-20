@@ -1,10 +1,16 @@
-import std/[asynchttpserver, asyncdispatch, strutils, json]
+import std/[asynchttpserver, asyncdispatch, strutils, json, tables]
 import typedefs, globals, httpHeaders, database
 
 
 proc handleGet(request: Request): ServerResponse = responseGetRequestAccepted(%* {})
 proc handlePut(request: Request): ServerResponse =
-    let status = request.body.newDatabaseEntryFromJsonString()
+    let
+        # Potential black-list in case of abuse:
+        agent: string = block:
+            request.hostname &
+            " " &
+            (if request.headers.hasKey("user-agent"): request.headers["user-agent"].string() else: "?")
+        status = request.body.newDatabaseEntryFromJsonString(agent.sanitizeIncomingDecodeEncode())
     result = block:
         if status.ok: responsePostRequestAccepted()
         else: responseInvalidData(status.message)

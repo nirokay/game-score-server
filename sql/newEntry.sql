@@ -1,1 +1,1 @@
-INSERT INTO REPLACE_ME (timestamp, username, score) VALUES (?, ?, ?);
+INSERT INTO REPLACE_ME (timestamp, username, score, agent) VALUES (?, ?, ?, ?);
