@@ -6,9 +6,11 @@ const
     keyUsername: string = "name"
     keyScore: string = "score"
     keyGame: string = "game"
+    keyVersion: string = "version"
 
     maxNameLength: int = 64
     minScore: int = 1
+    maxGameVersionLength: int = 16
 
 const
     sqlGamesInit: string = dbSqlTableInitsPath.readFile()
@@ -68,12 +70,12 @@ proc isValidTableName(name: string): bool =
 proc getTimeStamp(): int =
     result = toInt floor(epochTime() * 1000)
 
-proc newDatabaseEntry*(tableName: string, name: string, score: int, agent: string): tuple[ok: bool, message: string] =
+proc newDatabaseEntry*(tableName: string, name: string, score: int, version: string, agent: string): tuple[ok: bool, message: string] =
     let
         statement: string = sqlNewEntry.replace("REPLACE_ME", tableName)
         timestamp: int = getTimeStamp()
     withDatabase db:
-        db.exec(sql statement, timestamp, name, score, agent)
+        db.exec(sql statement, timestamp, name, score, version, agent)
     result = (ok: true, message: "Data written!")
 
 proc newDatabaseEntryFromJson*(json: JsonNode, agent: string): tuple[ok: bool, message: string] =
@@ -101,6 +103,12 @@ proc newDatabaseEntryFromJson*(json: JsonNode, agent: string): tuple[ok: bool, m
     if json.fields[keyGame].kind != JString: return reject("JSON '" & keyGame & "' field is not a string, malformed payload.")
     gameName = json.fields[keyGame].str
 
+    # Parse game version:
+    var version: string = ""
+    if not json.fields.hasKey(keyVersion): return reject("JSON '" & keyVersion & "' field does not exist, malformed payload.")
+    if json.fields[keyVersion].kind != JString: return reject("JSON '" & keyVersion & "' field is not a string, malformed payload.")
+    version = json.fields[keyVersion].str
+
     # VALIDATING:
     username = username.sanitizeIncomingDecodeEncode()
     if username.len() > maxNameLength: return reject("Validation: Rejected due to name length being over " & $maxNameLength & " characters (url encoded).")
@@ -116,8 +124,11 @@ proc newDatabaseEntryFromJson*(json: JsonNode, agent: string): tuple[ok: bool, m
         r
     if not isValidTableName(tableName): return reject("Validation: Rejected due to invalid table name (THIS IS A SERVER ISSUE).")
 
+    if version.len() > maxGameVersionLength: return reject("Validation: Rejected due to game version length of larger than " & $maxGameVersionLength & ".")
+    if version == "": return reject("Validation: Rejected due to empty game version field.")
+
     # Fucking finally:
-    result = newDatabaseEntry(tableName, username, score, agent)
+    result = newDatabaseEntry(tableName, username, score, version, agent)
 
 proc newDatabaseEntryFromJsonString*(data, agent: string): tuple[ok: bool, message: string] =
     var json: JsonNode
