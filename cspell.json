@@ -12,6 +12,11 @@
     "gcsafe",
     "asynchttpserver",
     "asyncdispatch",
-    "httpcore"
+    "httpcore",
+    "nirokay",
+    "Licence"
+  ],
+  "words": [
+    "highscore"
   ]
 }

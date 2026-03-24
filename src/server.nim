@@ -1,5 +1,5 @@
 import std/[asynchttpserver, asyncdispatch, strutils, json, tables]
-import typedefs, globals, httpHeaders, database
+import typedefs, globals, httpHeaders, database, acceptFile
 
 
 proc handleGet(request: Request): ServerResponse =
@@ -21,6 +21,7 @@ proc handleGet(request: Request): ServerResponse =
         return responseInvalidData("Invalid URL path.")
 
 proc handlePut(request: Request): ServerResponse =
+    if not isServerAcceptingPostRequests(): return responseRejected("Server is currently not accepting new POST requests.")
     let
         # Potential black-list in case of abuse:
         agent: string = block:
