@@ -8,7 +8,7 @@ const
     keyGame: string = "game"
     keyVersion: string = "version"
 
-    maxNameLength: int = 64
+    maxNameLength: int = 128 #64
     minScore: int = 1
     maxGameVersionLength: int = 16
 
@@ -175,10 +175,14 @@ proc getDataBaseEntriesForGame*(gameName: string): tuple[ok: bool, message: stri
         filteredElements: seq[JsonNode] = @[]
         namesCache: seq[string] = @[]
     for i, element in elements:
+        let fixedElement: JsonNode = block:
+            var r: JsonNode = element
+            if r.fields["name"].str == "": r.fields["name"].str = dbEmptyName
+            r
         if i + 1 > dbLeaderboardMaxLength: continue
-        if element.fields["name"].str in namesCache: continue
-        filteredElements.add element
-        namesCache.add element.fields["name"].str
+        if fixedElement.fields["name"].str in namesCache: continue
+        filteredElements.add fixedElement
+        if fixedElement.fields["name"].str != dbEmptyName: namesCache.add fixedElement.fields["name"].str
 
     # Ready:
     result.ok = true
