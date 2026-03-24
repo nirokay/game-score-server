@@ -4,7 +4,6 @@ import typedefs, globals, httpHeaders, database, acceptFile
 
 proc handleGet(request: Request): ServerResponse =
     let urlParts: seq[string] = request.url.path.split("/")[1..^1]
-    echo urlParts
     if urlParts.len() == 0: return responseInvalidData("Empty URL path.")
 
     case urlParts[0]:
