@@ -1,4 +1,5 @@
-import std/[strutils, httpcore, json, options]
+import std/[strutils, httpcore, json]
+import acceptFile
 
 type
     ResponseScoreEntry* = object
@@ -42,3 +43,9 @@ proc responseRejected*(msg: string = "Request rejected."): ServerResponse = newR
 proc responsePostRequestAccepted*(): ServerResponse = newResponse(Http201, "Post/Put request accepted.")
 proc responseGetRequestAccepted*(data: JsonNode): ServerResponse = newResponse(Http200, "Get request accepted.", data)
 proc responsePing*(): ServerResponse = newResponse(Http200, "Hello!")
+
+proc responseGetServerAcceptingStatus*(): ServerResponse = newResponse(
+    Http200,
+    "Server accepting status",
+    %* {"accepting": isServerAcceptingPostRequests()}
+)

@@ -1,4 +1,4 @@
-import std/[os, strutils, times, tables, json, math]
+import std/[os, strutils, times, tables, json, math, algorithm]
 import db_connector/db_sqlite
 import globals
 
@@ -15,6 +15,7 @@ const
 const
     sqlGamesInit: string = dbSqlTableInitsPath.readFile()
     sqlNewEntry: string = dbSqlNewEntryPath.readFile()
+    sqlGetEntries: string = dbSqlGetEntriesPath.readFile()
 
 
 proc getDatabase(): DbConn =
@@ -52,7 +53,6 @@ proc reject(msg: string): tuple[ok: bool, message: string] = (ok: false, message
 
 
 proc initDatabase*() =
-    let initFile: string = dbSqlTableInitsPath.readFile()
     for entry in gamesTable:
         let statement: string = sqlGamesInit.replace("REPLACE_ME", entry.tableName)
         withDatabase db:
@@ -137,3 +137,52 @@ proc newDatabaseEntryFromJsonString*(data, agent: string): tuple[ok: bool, messa
     except CatchableError as e:
         return reject("JSON failed to parse, malformed payload.")
     result = json.newDatabaseEntryFromJson(agent)
+
+
+proc rowToJson(row: Row): JsonNode = %* {
+    "timestamp": parseInt row[0],
+    "name": row[1],
+    "score": parseInt row[2],
+    "version": row[3]
+}
+
+proc getDatabaseEntriesForTable(tableName: string): seq[Row] =
+    let statement: string = sqlGetEntries.replace("REPLACE_ME", tableName)
+    withDatabase db:
+        result = db.getAllRows(sql statement)
+proc getDataBaseEntriesForGame*(gameName: string): tuple[ok: bool, message: string, data: JsonNode] =
+    proc reject(message: string): tuple[ok: bool, message: string, data: JsonNode] = (ok: false, message: message, data: %* [])
+    let tableName: string = block:
+        var r: string
+        for entry in gamesTable:
+            if gameName == entry.gameName: r = entry.tableName
+        r
+    if not isValidTableName(tableName): return reject("Invalid table name.")
+
+    # Get and parse rows:
+    let rows: seq[Row] = getDatabaseEntriesForTable(tableName)
+    var elements: seq[JsonNode]
+    for row in rows:
+        elements.add row.rowToJson()
+
+    # Sort:
+    proc byScore(x, y: JsonNode): int =
+        result = cmp(y.fields["score"].num, x.fields["score"].num)
+    elements.sort(byScore)
+
+    # Filter:
+    var
+        filteredElements: seq[JsonNode] = @[]
+        namesCache: seq[string] = @[]
+    for i, element in elements:
+        if i + 1 > dbLeaderboardMaxLength: continue
+        if element.fields["name"].str in namesCache: continue
+        filteredElements.add element
+        namesCache.add element.fields["name"].str
+
+    # Ready:
+    result.ok = true
+    result.data = JsonNode(
+        kind: JArray,
+        elems: filteredElements
+    )

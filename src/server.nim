@@ -2,7 +2,24 @@ import std/[asynchttpserver, asyncdispatch, strutils, json, tables]
 import typedefs, globals, httpHeaders, database
 
 
-proc handleGet(request: Request): ServerResponse = responseGetRequestAccepted(%* {})
+proc handleGet(request: Request): ServerResponse =
+    let urlParts: seq[string] = request.url.path.split("/")[1..^1]
+    echo urlParts
+    if urlParts.len() == 0: return responseInvalidData("Empty URL path.")
+
+    case urlParts[0]:
+    of "status":
+        return responseGetServerAcceptingStatus()
+    of "leaderboard":
+        if urlParts.len() < 2: return responseInvalidData("Empty URL path, no game name provided.")
+        if urlParts[1] == "": return responseInvalidData("Empty URL path, no game name provided.")
+
+        let gameName: string = urlParts[1]
+        let response: tuple[ok: bool, message: string, data: JsonNode] = getDataBaseEntriesForGame(gameName)
+        return responseGetRequestAccepted(response.data)
+    else:
+        return responseInvalidData("Invalid URL path.")
+
 proc handlePut(request: Request): ServerResponse =
     let
         # Potential black-list in case of abuse:

@@ -11,6 +11,7 @@
     "fnum",
     "gcsafe",
     "asynchttpserver",
-    "asyncdispatch"
+    "asyncdispatch",
+    "httpcore"
   ]
 }

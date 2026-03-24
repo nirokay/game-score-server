@@ -6,16 +6,16 @@ const port* {.intdefine.}: int = 42067
 
 # DB:
 const
-
     dbName* {.strdefine.}: string = "database.db"
     dbEmptyName* {.strdefine.}: string = "<i>anonymous</i>" ## returned to the browser when name was left empty, HTML applied
-
+    dbLeaderboardMaxLength* {.intdefine.}: int = 10
 
 # SQL:
 const
     dbSqlPath* {.strdefine.}: string = "./sql/"
     dbSqlTableInitsPath*: string = dbSqlPath & "gamesInit.sql"
     dbSqlNewEntryPath*: string = dbSqlPath & "newEntry.sql"
+    dbSqlGetEntriesPath*: string = dbSqlPath & "getEntries.sql"
 
 
 # Sanitization:
